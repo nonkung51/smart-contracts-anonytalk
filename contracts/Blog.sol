@@ -3,39 +3,47 @@ pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 contract Blog {
-  struct Post {
-    uint id;
-    string body;
-    string author;
-  }
-  Post[] private posts;
-  uint public nextId = 1;
-
-  function create(string memory body) public {
-    posts.push(Post(nextId, body, "test"));
-    nextId++;
-  }
-
-  function read(uint id) view public returns(uint, string memory, string memory) {
-    uint i = find(id);
-    return(posts[i].id, posts[i].body, posts[i].author);
-  }
-
-//   function destroy(uint id) public {
-//     uint i = find(id);
-//     delete users[i];
-//   }
-
-  function find(uint id) view internal returns(uint) {
-    for(uint i = 0; i < posts.length; i++) {
-      if(posts[i].id == id) {
-        return i;
-      }
+    struct Post {
+        uint256 id;
+        string body;
+        string author;
     }
-    revert('Post does not exist!');
-  }
-  
-  function list() view public returns(Post[] memory) {
-      return posts;
-  }
+    Post[] private posts;
+    uint256 public nextId = 1;
+
+    function create(string memory body, string memory author) public {
+        posts.push(Post(nextId, body, author));
+        nextId++;
+    }
+
+    function read(uint256 id)
+        public
+        view
+        returns (
+            uint256,
+            string memory,
+            string memory
+        )
+    {
+        uint256 i = find(id);
+        return (posts[i].id, posts[i].body, posts[i].author);
+    }
+
+    //   function destroy(uint id) public {
+    //     uint i = find(id);
+    //     delete users[i];
+    //   }
+
+    function find(uint256 id) internal view returns (uint256) {
+        for (uint256 i = 0; i < posts.length; i++) {
+            if (posts[i].id == id) {
+                return i;
+            }
+        }
+        revert("Post does not exist!");
+    }
+
+    function list() public view returns (Post[] memory) {
+        return posts;
+    }
 }
