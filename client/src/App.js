@@ -3,6 +3,7 @@ import Web3 from 'web3';
 import styled from 'styled-components';
 
 import BlogSmartContract from './Blog.json';
+import catPics from './catPics.json';
 
 const Container = styled.div`
 	display: flex;
@@ -41,7 +42,7 @@ const PostContainer = styled.div`
 	border-style: solid;
 	width: 28rem;
 	padding: 1rem;
-	margin: 0rem;
+	margin: 0.4rem;
 	display: flex;
 	flex-direction: column;
 `;
@@ -49,10 +50,37 @@ const PostContainer = styled.div`
 const Post = ({ body, author }) => {
 	return (
 		<PostContainer>
+			<p>
+				{/* posted by: */}
+				<img
+					src={author.toCat()}
+					alt='Cat'
+					width='48'
+					height='48'
+					style={{
+						marginLeft: '0.4rem',
+						marginRight: '0.8rem',
+						verticalAlign: 'middle',
+						borderRadius: '2rem',
+					}}
+				/>
+				{author}
+			</p>
 			<p>{body}</p>
-			<p>posted by: {author}</p>
 		</PostContainer>
 	);
+};
+
+String.prototype.toCat = function () {
+	const cats = catPics;
+	let hash = 0;
+	if (this.length === 0) return hash;
+	for (var i = 0; i < this.length; i++) {
+		hash = this.charCodeAt(i) + ((hash << 5) - hash);
+		hash = hash & hash;
+	}
+	hash = ((hash % cats.length) + cats.length) % cats.length;
+	return cats[hash];
 };
 
 function App() {
@@ -96,7 +124,6 @@ function App() {
 			.then((_web3) => {
 				setWeb3(_web3);
 				setBlogSmartContract(initContract(_web3));
-				// initApp();
 			})
 			.catch((e) => console.log(e.message));
 	}, []);
@@ -125,7 +152,7 @@ function App() {
 		blogSmartContract.methods
 			.create(textInput, authorInput)
 			.send({ from: accounts[0] })
-			.then((result) => {
+			.then(() => {
 				return blogSmartContract.methods.list().call();
 			})
 			.then((result) => {
@@ -143,7 +170,7 @@ function App() {
 
 	return (
 		<Container>
-			<h1 style={{ marginBottom: '0.2rem' }}>CSAG: AnonyTalk</h1>
+			<h1 style={{ marginBottom: '0.2rem' }}>CSAG: AnonyTalk 🎉</h1>
 			<h3 style={{ marginTop: '0rem' }}>
 				{' '}
 				(Powered by Ethereum Smart Contract)
@@ -167,11 +194,9 @@ function App() {
 			<h2>Explore the others posts down here!</h2>
 			<ContentsContainer>
 				{posts
-					.map(({ body, author }) => (
-						<p>
-							<Post body={body} author={author} />
-						</p>
-					))
+					.map(({ body, author }) => {
+						return <Post body={body} author={author} />;
+					})
 					.reverse()}
 			</ContentsContainer>
 		</Container>
