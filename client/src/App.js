@@ -1,19 +1,51 @@
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import Web3 from 'web3';
+import styled from 'styled-components';
+
 import BlogSmartContract from './Blog.json';
-import './App.css';
+
+const Container = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+`;
+
+const TextArea = styled.textarea`
+	resize: none;
+	height: 15rem;
+	width: 30rem;
+`;
+
+const ContentsContainer = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+`;
+
+const FormContainer = styled.form`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+`;
+
+const SubFormContainer = styled.div`
+	display: flex;
+	width: 22rem;
+	margin-top: 1rem;
+	justify-content: space-between;
+`;
 
 function App() {
 	const [web3, setWeb3] = useState(null);
 	const [accounts, setAccounts] = useState([]);
 	const [blogSmartContract, setBlogSmartContract] = useState(null);
 	const [posts, setPosts] = useState([]);
+	const [textInput, setTextInput] = useState('');
+	const [authorInput, setAuthorInput] = useState('');
 
 	const initWeb3 = () => {
 		return new Promise((resolve, reject) => {
 			if (typeof window.ethereum !== 'undefined') {
-				const web3 = new Web3(window.ethereum);
 				window.ethereum
 					.enable()
 					.then(() => {
@@ -58,29 +90,65 @@ function App() {
 					return blogSmartContract.methods.list().call();
 				})
 				.then((result) => {
-					setPosts(result);
+					setPosts(formattedPosts(result));
 				})
 				.catch((e) => console.log(e.message));
 		}
 	}, [web3, blogSmartContract]);
 
+	const onSubmit = (e) => {
+		e.preventDefault();
+		blogSmartContract.methods
+			.create(textInput, authorInput)
+			.send({ from: accounts[0] })
+			.then((result) => {
+				return blogSmartContract.methods.list().call();
+			})
+			.then((result) => {
+				setPosts(formattedPosts(result));
+				setAuthorInput('');
+				setTextInput('');
+			});
+	};
+
+	const formattedPosts = (unformattedPost) => {
+		return unformattedPost.map((post) => {
+			return { id: parseInt(post[0]), body: post[1], author: post[2] };
+		});
+	};
+
 	return (
-		<div className='App'>
-			<header className='App-header'>
-				<img src={logo} className='App-logo' alt='logo' />
-				<p>
-					Edit <code>src/App.js</code> and save to reload.
-				</p>
-				<a
-					className='App-link'
-					href='https://reactjs.org'
-					target='_blank'
-					rel='noopener noreferrer'
-				>
-					Learn React
-				</a>
-			</header>
-		</div>
+		<Container>
+			<h1 style={{ marginBottom: '0.2rem' }}>CSAG: AnonyTalk</h1>
+			<h3 style={{ marginTop: '0rem' }}>
+				{' '}
+				(Powered by Ethereum Smart Contract)
+			</h3>
+			<FormContainer onSubmit={onSubmit}>
+				<TextArea
+					placeholder='Remember, be nice!'
+					type='text'
+					onChange={(e) => setTextInput(e.target.value)}
+				></TextArea>
+				<SubFormContainer>
+					<label>Type your name: </label>
+					<input
+						placeholder='Anonymous Cat'
+						type='text'
+						onChange={(e) => setAuthorInput(e.target.value)}
+					></input>
+					<button>Submit</button>
+				</SubFormContainer>
+			</FormContainer>
+			<h2>Explore the others posts down here!</h2>
+			<ContentsContainer>
+				{posts.map((post) => (
+					<p>
+						{post.body} by {post.author}
+					</p>
+				))}
+			</ContentsContainer>
+		</Container>
 	);
 }
 
