@@ -35,6 +35,26 @@ const SubFormContainer = styled.div`
 	justify-content: space-between;
 `;
 
+const PostContainer = styled.div`
+	border-width: 0.02rem;
+	border-color: black;
+	border-style: solid;
+	width: 28rem;
+	padding: 1rem;
+	margin: 0rem;
+	display: flex;
+	flex-direction: column;
+`;
+
+const Post = ({ body, author }) => {
+	return (
+		<PostContainer>
+			<p>{body}</p>
+			<p>posted by: {author}</p>
+		</PostContainer>
+	);
+};
+
 function App() {
 	const [web3, setWeb3] = useState(null);
 	const [accounts, setAccounts] = useState([]);
@@ -98,6 +118,10 @@ function App() {
 
 	const onSubmit = (e) => {
 		e.preventDefault();
+		if (authorInput === '' || textInput === '') {
+			return alert('Either "author name" or "post body" is empty!');
+		}
+
 		blogSmartContract.methods
 			.create(textInput, authorInput)
 			.send({ from: accounts[0] })
@@ -142,11 +166,13 @@ function App() {
 			</FormContainer>
 			<h2>Explore the others posts down here!</h2>
 			<ContentsContainer>
-				{posts.map((post) => (
-					<p>
-						{post.body} by {post.author}
-					</p>
-				))}
+				{posts
+					.map(({ body, author }) => (
+						<p>
+							<Post body={body} author={author} />
+						</p>
+					))
+					.reverse()}
 			</ContentsContainer>
 		</Container>
 	);
