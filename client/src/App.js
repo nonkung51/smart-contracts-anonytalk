@@ -15,6 +15,50 @@ const TextArea = styled.textarea`
 	resize: none;
 	height: 15rem;
 	width: 30rem;
+	border-radius: 2rem;
+	padding: 1rem 0.8rem;
+	border-width: 0rem;
+
+	&:focus {
+		-webkit-box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		-moz-box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		transform: scaleX(1.1) scaleY(1.1);
+		transform-origin: middle;
+		outline: none;
+	}
+`;
+
+const AuthorInput = styled.input`
+	border-radius: 1rem;
+	border-width: 0rem;
+
+	&:focus {
+		-webkit-box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		-moz-box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		transform: scaleX(1.1) scaleY(1.1);
+		transform-origin: middle;
+		outline: none;
+	}
+`;
+
+const SubmitButton = styled.button`
+	border-radius: 2rem;
+	border-width: 0rem;
+	color: white;
+	background-color: darkolivegreen;
+	cursor: pointer;
+	&:hover {
+		-webkit-box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		-moz-box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		box-shadow: 0px 0px 21px 15px rgba(0, 0, 0, 0.15);
+		transform: scaleX(1.05) scaleY(1.05);
+		transform-origin: bottom;
+	}
+	&:focus {
+		outline: none;
+	}
 `;
 
 const ContentsContainer = styled.div`
@@ -37,21 +81,29 @@ const SubFormContainer = styled.div`
 `;
 
 const PostContainer = styled.div`
-	border-width: 0.02rem;
-	border-color: black;
-	border-style: solid;
+	background-color: white;
+	border-radius: 2rem;
 	width: 28rem;
 	padding: 1rem;
 	margin: 0.4rem;
 	display: flex;
 	flex-direction: column;
+
+	&:hover {
+		-webkit-box-shadow: 0px 1px 13px -6px rgba(0, 0, 0, 0.65);
+		-moz-box-shadow: 0px 1px 13px -6px rgba(0, 0, 0, 0.65);
+		box-shadow: 0px 1px 13px -6px rgba(0, 0, 0, 0.65);
+		transform: scaleX(1.1) scaleY(1.1);
+		transform-origin: middle;
+		margin-bottom: 1rem;
+		margin-top: 1rem;
+	}
 `;
 
 const Post = ({ body, author }) => {
 	return (
 		<PostContainer>
 			<p>
-				{/* posted by: */}
 				<img
 					src={author.toCat()}
 					alt='Cat'
@@ -90,6 +142,7 @@ function App() {
 	const [posts, setPosts] = useState([]);
 	const [textInput, setTextInput] = useState('');
 	const [authorInput, setAuthorInput] = useState('');
+	const [waiting, setWaiting] = useState(false);
 
 	const initWeb3 = () => {
 		return new Promise((resolve, reject) => {
@@ -149,6 +202,7 @@ function App() {
 			return alert('Either "author name" or "post body" is empty!');
 		}
 
+		setWaiting(true);
 		blogSmartContract.methods
 			.create(textInput, authorInput)
 			.send({ from: accounts[0] })
@@ -156,9 +210,10 @@ function App() {
 				return blogSmartContract.methods.list().call();
 			})
 			.then((result) => {
-				setPosts(formattedPosts(result));
+				setWaiting(false);
 				setAuthorInput('');
 				setTextInput('');
+				setPosts(formattedPosts(result));
 			});
 	};
 
@@ -170,8 +225,8 @@ function App() {
 
 	return (
 		<Container>
-			<h1 style={{ marginBottom: '0.2rem' }}>CSAG: AnonyTalk 🎉</h1>
-			<h3 style={{ marginTop: '0rem' }}>
+			<h1 style={{ marginBottom: '0.2rem', color: 'white' }}>CSAG: AnonyTalk 🎉</h1>
+			<h3 style={{ marginTop: '0rem', color: 'white' }}>
 				{' '}
 				(Powered by Ethereum Smart Contract)
 			</h3>
@@ -179,19 +234,24 @@ function App() {
 				<TextArea
 					placeholder='Remember, be nice!'
 					type='text'
+					value={textInput}
 					onChange={(e) => setTextInput(e.target.value)}
 				></TextArea>
 				<SubFormContainer>
-					<label>Type your name: </label>
-					<input
+					<label style={{ color: 'white' }}>Type your name: </label>
+					<AuthorInput
 						placeholder='Anonymous Cat'
 						type='text'
+						value={authorInput}
 						onChange={(e) => setAuthorInput(e.target.value)}
-					></input>
-					<button>Submit</button>
+					></AuthorInput>
+					<SubmitButton disabled={waiting}>Submit</SubmitButton>
 				</SubFormContainer>
 			</FormContainer>
-			<h2>Explore the others posts down here!</h2>
+			<hr style={{ width: '9rem', marginTop: '2rem', borderColor: 'white', backgroundColor: 'white' }}></hr>
+			{posts.length > 0 && (
+				<h2 style={{ color: 'white' }}>Explore the others posts down here!</h2>
+			)}
 			<ContentsContainer>
 				{posts
 					.map(({ body, author }) => {
